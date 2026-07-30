@@ -1,4 +1,4 @@
-package org.jin.newsfinder;
+package org.jin.newsfinder.news;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
