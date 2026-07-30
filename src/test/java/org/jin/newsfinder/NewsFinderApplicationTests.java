@@ -1,7 +1,7 @@
-package org.jin.newsfinder
+package org.jin.newsfinder;
 
-import org.junit.jupiter.api.Test
-import org.springframework.boot.test.context.SpringBootTest
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 class NewsFinderApplicationTests {

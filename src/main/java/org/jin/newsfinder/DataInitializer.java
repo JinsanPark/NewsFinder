@@ -1,13 +1,14 @@
 package org.jin.newsfinder;
 
 import org.jin.newsfinder.embedding.EmbeddingClient;
+import org.jin.newsfinder.embedding.EmbeddingConverter;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Component
+//@Component
 public class DataInitializer implements CommandLineRunner {
 
     private final NewsRepository newsRepository;
@@ -20,16 +21,21 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-//        News news = new News("제목", "본문", "요약", "URL", "원본", LocalDateTime.now());
-//        news.setEmbedding("0.1, 0.2, 0.3");
-//        newsRepository.save(news);
-        List<Double> vector = embeddingClient.embedDocument("안녕하세요.");
+
+        News news = new News(
+                "코스피 5000 시대",
+                "코스피 9000에서 5000으로 하락",
+                "누구의 책임인가",
+                "https://www.test.test/view/1234?section=market/",
+                "테스트 뉴스",
+                LocalDateTime.now());
+
+
+        List<Double> vector = embeddingClient.embedDocument(news.getSummary());
+        news.setEmbedding(EmbeddingConverter.toText(vector));
+        newsRepository.save(news);
         System.out.println(vector.size());
         System.out.println(vector.subList(0,5));
 
     }
-
-
-
-
 }
