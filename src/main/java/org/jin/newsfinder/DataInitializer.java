@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -29,9 +30,21 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         NewsArticle[] articles = objectMapper.readValue(new File("data/news_articles_dummy.json"), NewsArticle[].class);
-        int count = 0;
         long start = System.nanoTime();
+
+        List<String> newsString = new ArrayList<>();
+
         for (NewsArticle article : articles){
+                newsString.add(article.summary() + "\n" + article.title());
+        }
+
+        List<List<Double>> vectors = embeddingClient.embedDocuments(newsString);
+
+        List<News> newsList = new ArrayList<>();
+
+        for (int i = 0; i < articles.length; i++) {
+            NewsArticle article = articles[i];
+            List<Double> vector = vectors.get(i);
 
             News news = new News(
                     article.title(),
@@ -42,16 +55,11 @@ public class DataInitializer implements CommandLineRunner {
                     article.publishedAt()
             );
 
-            List<Double> vector = embeddingClient.embedDocument(news.getSummary() + "\n" + news.getTitle());
             news.setEmbedding(EmbeddingConverter.toText(vector));
-            newsRepository.save(news);
-            count++;
-
-            if (count % 50 == 0){
-                System.out.println(count + "번째 입니다.");
-            }
-
+            newsList.add(news);
         }
+
+        newsRepository.saveAll(newsList);
 
         long end = System.nanoTime();
         double seconds = (end - start) / 1_000_000_000.0;
