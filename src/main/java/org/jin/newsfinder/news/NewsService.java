@@ -9,8 +9,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+
+
 @Service
 public class NewsService {
+    private final static int MAX_SEARCH_SIZE = 10;
+    //무관한 검색어 최고 점수 0.3아래. 연관 검색시 최고 0.46;
+    private final static double MIN_SEARCH_SCORE = 0.35;
     private final NewsRepository newsRepository;
     private final EmbeddingClient embeddingClient;
 
@@ -28,12 +33,15 @@ public class NewsService {
         for(News news : newsList) {
             List<Double> newsVector = EmbeddingConverter.toVector(news.getEmbedding());
             double score = EmbeddingSimilarity.cosineSimilarity(queryToVector, newsVector);
-            results.add(new NewsSearchResult(news,score));
+
+            if(score >= MIN_SEARCH_SCORE){
+                results.add(new NewsSearchResult(news,score));
+            }
         }
 
         results.sort(Comparator.comparingDouble(NewsSearchResult::score).reversed());
 
-        return results;
+        return results.subList(0, Math.min(MAX_SEARCH_SIZE , results.size()));
     }
 
 }

@@ -11,7 +11,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+//@Component
 public class DataInitializer implements CommandLineRunner {
 
     private final NewsRepository newsRepository;
