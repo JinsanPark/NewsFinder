@@ -1,4 +1,5 @@
 package org.jin.newsfinder.news;
 
-public record NewsSearchResult(News news, double score) {
-}
+import java.time.LocalDateTime;
+
+public record NewsSearchResult(String title, String summary, String url, LocalDateTime publishedAt, String source, double score) {}

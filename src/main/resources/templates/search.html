@@ -16,9 +16,11 @@
     <ul th:if="${results != null}">
     <li th:each="result : ${results}">
 
-        <span th:text="${result.news.title}">제목</span>
+        <span th:text="${result.title}">제목</span>
+        <span th:text="${result.summary}">요약</span>
         <span th:text="${result.score}">점수</span>
-        <a th:href="${result.news.url}">원본 링크</a>
+        <span th:text="${#temporals.format(result.publishedAt, 'yyyy-MM-dd HH:mm')}">날짜</span>
+        <a th:href="${result.url}">원본 링크</a>
 
     </li>
     </ul>

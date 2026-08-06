@@ -14,7 +14,7 @@ import java.util.List;
 @Service
 public class NewsService {
     private final static int MAX_SEARCH_SIZE = 10;
-    //무관한 검색어 최고 점수 0.3아래. 연관 검색시 최고 0.46;
+    //무관한 검색어 검색시 최고 점수 0.3아래. 연관된 검색어 검색시 최고 0.46;
     private final static double MIN_SEARCH_SCORE = 0.35;
     private final NewsRepository newsRepository;
     private final EmbeddingClient embeddingClient;
@@ -35,7 +35,14 @@ public class NewsService {
             double score = EmbeddingSimilarity.cosineSimilarity(queryToVector, newsVector);
 
             if(score >= MIN_SEARCH_SCORE){
-                results.add(new NewsSearchResult(news,score));
+                results.add(new NewsSearchResult(
+                        news.getTitle(),
+                        news.getSummary(),
+                        news.getUrl(),
+                        news.getPublishedAt(),
+                        news.getSource(),
+                        score
+                ));
             }
         }
 
