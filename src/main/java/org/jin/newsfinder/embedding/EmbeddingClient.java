@@ -1,6 +1,7 @@
 package org.jin.newsfinder.embedding;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -22,7 +23,14 @@ public class EmbeddingClient {
                 .header("Authorization", "Bearer " + apiKey)
                 .body(embeddingRequest)
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    throw new EmbeddingApiException("Voyage 오류 : " + res.getStatusCode(), null);
+                })
                 .body(EmbeddingResponse.class);
+
+        if(response == null || response.data().isEmpty()) {
+            throw new EmbeddingApiException("Voyage 응답 없음", null);
+        }
 
         return response.data().get(0).embedding();
     }
@@ -37,7 +45,16 @@ public class EmbeddingClient {
                 .header("Authorization", "Bearer " + apiKey)
                 .body(embeddingRequest)
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {
+                    throw new EmbeddingApiException("Voyage 오류 : " + res.getStatusCode(), null);
+                })
                 .body(EmbeddingResponse.class);
+
+        if(response == null || chunk.size() != response.data().size()){
+            System.out.println("청크 개수" + chunk.size());
+            System.out.println("데이터 개수" + response.data().size());
+            throw new EmbeddingApiException("데이터 매칭 실패", null);
+        }
 
 
         for (EmbeddingData data : response.data()){
