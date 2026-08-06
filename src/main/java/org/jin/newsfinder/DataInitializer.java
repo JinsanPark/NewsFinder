@@ -4,6 +4,7 @@ import org.jin.newsfinder.embedding.EmbeddingClient;
 import org.jin.newsfinder.embedding.EmbeddingConverter;
 import org.jin.newsfinder.news.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
@@ -11,23 +12,27 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-//@Component
+@Component
+@Profile("init")
 public class DataInitializer implements CommandLineRunner {
 
     private final NewsRepository newsRepository;
     private final EmbeddingClient embeddingClient;
-    private final NewsService newsService;
     private final ObjectMapper objectMapper;
 
     public DataInitializer(NewsRepository newsRepository, EmbeddingClient embeddingClient, NewsService newsService, ObjectMapper objectMapper) {
         this.newsRepository = newsRepository;
         this.embeddingClient = embeddingClient;
-        this.newsService = newsService;
         this.objectMapper = objectMapper;
     }
 
     @Override
     public void run(String... args) throws Exception {
+
+        if (newsRepository.count() > 0){
+            System.out.println("데이터 이미 있음.");
+            return;
+        }
 
         NewsArticle[] articles = objectMapper.readValue(new File("data/news_articles_dummy.json"), NewsArticle[].class);
         long start = System.nanoTime();

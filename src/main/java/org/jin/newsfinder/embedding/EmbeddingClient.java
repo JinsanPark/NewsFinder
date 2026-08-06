@@ -13,10 +13,6 @@ public class EmbeddingClient {
     private String apiKey;
     private final RestClient restClient = RestClient.create();
 
-    public String maskedKey() {
-        return apiKey.substring(0,5);
-    }
-
     private List<Double> embed(String text, String inputType){
 
         EmbeddingRequest embeddingRequest = new EmbeddingRequest(List.of(text),"voyage-4-lite" ,inputType);
