@@ -62,6 +62,9 @@ public class DataInitializer implements CommandLineRunner {
 
             news.setEmbedding(EmbeddingConverter.toText(vector));
             newsList.add(news);
+
+
+
         }
 
         newsRepository.saveAll(newsList);
