@@ -25,8 +25,12 @@ public class NewsCache {
 
 
         for (News news : newsList) {
-            cachedNewsList.add(new CachedNews(news.getTitle(), news.getSummary(), news.getUrl(),news.getSource(),news.getPublishedAt(), EmbeddingConverter.toVector(news.getEmbedding())));
-            System.out.println("캐시 적재 테스트 : " + cachedNewsList.size());
+            cachedNewsList.add(new CachedNews(news.getTitle(), news.getSummary(), news.getUrl(), news.getSource(),news.getPublishedAt(), EmbeddingConverter.toVector(news.getEmbedding())));
         }
     }
+
+    public List<CachedNews> getCachedNewsList() {
+        return cachedNewsList;
+    }
+
 }

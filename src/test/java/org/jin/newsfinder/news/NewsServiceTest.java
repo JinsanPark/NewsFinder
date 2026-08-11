@@ -16,20 +16,20 @@ public class NewsServiceTest {
     @Test
     void 점수_미만_필터링_테스트(){
 
-        News news1 = new News("제목1", "본문", "요약", "url1", "출처", LocalDateTime.now());
-        news1.setEmbedding("1.0,0.0");
+        CachedNews news1 = new CachedNews("제목1",  "요약", "url1", "출처", LocalDateTime.now(), List.of(1.0,0.0));
 
-        News news2 = new News("제목2", "본문", "요약", "url2", "출처", LocalDateTime.now());
-        news2.setEmbedding("1.0,1.0");
+        CachedNews news2 = new CachedNews("제목2", "요약", "url2", "출처", LocalDateTime.now(), List.of(1.0,1.0));
 
-        News news3 = new News("제목3", "본문", "요약", "url3", "출처", LocalDateTime.now());
-        news3.setEmbedding("0.0,1.0");
+        CachedNews news3 = new CachedNews("제목3",  "요약", "url3", "출처", LocalDateTime.now(), List.of(0.0,1.0));
 
+        NewsCache newsCache = mock(NewsCache.class);
+        List<CachedNews> list = new ArrayList<>();
+        list.add(news1);
+        list.add(news2);
+        list.add(news3);
+        when(newsCache.getCachedNewsList()).thenReturn(List.of(news1, news2,news3));
 
-        NewsRepository newsRepository = mock(NewsRepository.class);
-        when(newsRepository.findAll()).thenReturn(List.of(news1, news2,news3));
-
-        NewsService newsService = new NewsService(newsRepository, new FakeEmbeddingClient());
+        NewsService newsService = new NewsService(newsCache, new FakeEmbeddingClient());
 
         List<NewsSearchResult> results = newsService.search("테스트");
 
@@ -39,16 +39,15 @@ public class NewsServiceTest {
     @Test
     void 게시물_10개_제한_테스트(){
 
-        List<News> newsList = new ArrayList<>();
+        List<CachedNews> cachedNewsList= new ArrayList<>();
         for (int i = 0; i < 15; i++) {
-            News news = new News("제목" + i, "본문", "요약", "url" + i, "출처", LocalDateTime.now());
-            news.setEmbedding("1.0,0.0");
-            newsList.add(news);
+            CachedNews cachedNews = new CachedNews("제목" + i, "요약", "url" + i, "출처", LocalDateTime.now(), List.of(1.0,0.0));
+            cachedNewsList.add(cachedNews);
         }
 
-        NewsRepository newsRepository = mock(NewsRepository.class);
-        when(newsRepository.findAll()).thenReturn(newsList);
-        NewsService newsService = new NewsService(newsRepository, new FakeEmbeddingClient());
+        NewsCache newsCache = mock(NewsCache.class);
+        when(newsCache.getCachedNewsList()).thenReturn(cachedNewsList);
+        NewsService newsService = new NewsService(newsCache, new FakeEmbeddingClient());
         List<NewsSearchResult> results = newsService.search("테스트");
 
         assertThat(results).hasSize(10);
