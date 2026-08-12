@@ -1,7 +1,6 @@
 package org.jin.newsfinder;
 
 import org.jin.newsfinder.embedding.EmbeddingClient;
-import org.jin.newsfinder.embedding.EmbeddingConverter;
 import org.jin.newsfinder.news.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -43,13 +42,13 @@ public class DataInitializer implements CommandLineRunner {
                 newsString.add(article.summary() + "\n" + article.title());
         }
 
-        List<List<Double>> vectors = embeddingClient.embedDocuments(newsString);
+        List<float[]> vectors = embeddingClient.embedDocuments(newsString);
 
         List<News> newsList = new ArrayList<>();
 
         for (int i = 0; i < articles.length; i++) {
             NewsArticle article = articles[i];
-            List<Double> vector = vectors.get(i);
+            float[] vector = vectors.get(i);
 
             News news = new News(
                     article.title(),
@@ -60,10 +59,8 @@ public class DataInitializer implements CommandLineRunner {
                     article.publishedAt()
             );
 
-            news.setEmbedding(EmbeddingConverter.toText(vector));
+            news.setEmbedding(vector);
             newsList.add(news);
-
-
 
         }
 

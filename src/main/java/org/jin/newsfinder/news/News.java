@@ -2,6 +2,10 @@ package org.jin.newsfinder.news;
 
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Array;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -19,10 +23,11 @@ public class News {
     private String source;
     private LocalDateTime publishedAt;
 
-    @Column(length = 30000)
-    private String embedding;
+    @JdbcTypeCode(SqlTypes.VECTOR)
+    @Array(length = 1024)
+    private float[] embedding;
 
-    public void setEmbedding(String embedding) {
+    public void setEmbedding(float[] embedding) {
         this.embedding = embedding;
     }
 
@@ -54,7 +59,7 @@ public class News {
         return publishedAt;
     }
 
-    public String getEmbedding() {
+    public float[] getEmbedding() {
         return embedding;
     }
 

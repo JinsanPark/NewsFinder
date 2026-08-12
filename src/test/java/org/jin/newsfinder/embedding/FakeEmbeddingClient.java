@@ -6,12 +6,13 @@ public class FakeEmbeddingClient implements EmbeddingClient {
 
 
     @Override
-    public List<Double> embedQuery(String text) {
-        return List.of(1.0, 0.0);
+    public float[] embedQuery(String text) {
+        float[] test = {1.0f,0.0f};
+        return test;
     }
 
     @Override
-    public List<List<Double>> embedDocuments(List<String> texts) {
+    public List<float[]> embedDocuments(List<String> texts) {
         return List.of();
     }
 }

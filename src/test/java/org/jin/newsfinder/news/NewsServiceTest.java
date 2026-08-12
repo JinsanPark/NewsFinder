@@ -1,54 +1,37 @@
 package org.jin.newsfinder.news;
 
+import org.jin.newsfinder.embedding.FakeEmbeddingClient;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import org.jin.newsfinder.embedding.FakeEmbeddingClient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 public class NewsServiceTest {
 
     @Test
-    void 점수_미만_필터링_테스트(){
+    void 프로젝션_TO_검색결과() {
 
-        CachedNews news1 = new CachedNews("제목1",  "요약", "url1", "출처", LocalDateTime.now(), List.of(1.0,0.0));
+        NewsRepository newsRepository = mock(NewsRepository.class);
+        NewsSearchProjection projection = mock(NewsSearchProjection.class);
 
-        CachedNews news2 = new CachedNews("제목2", "요약", "url2", "출처", LocalDateTime.now(), List.of(1.0,1.0));
+        when(projection.getTitle()).thenReturn("제목1");
+        when(projection.getScore()).thenReturn(0.5);
+        when(projection.getPublishedAt()).thenReturn(LocalDateTime.of(2026, 1, 1, 0, 0));
+        when(projection.getSummary()).thenReturn("요약1");
+        when(projection.getUrl()).thenReturn("원본링크1");
+        when(projection.getSource()).thenReturn("뉴스회사1");
 
-        CachedNews news3 = new CachedNews("제목3",  "요약", "url3", "출처", LocalDateTime.now(), List.of(0.0,1.0));
+        when(newsRepository.searchByVector(any(), anyDouble(), anyInt())).thenReturn(List.of(projection));
 
-        NewsCache newsCache = mock(NewsCache.class);
-        when(newsCache.getCachedNewsList()).thenReturn(List.of(news1, news2,news3));
+        List<NewsSearchResult> results = new NewsService(newsRepository, new FakeEmbeddingClient()).search("테스트");
 
-        NewsService newsService = new NewsService(newsCache, new FakeEmbeddingClient());
-
-        List<NewsSearchResult> results = newsService.search("테스트");
-
-        assertThat(results).extracting(NewsSearchResult::title).containsExactly("제목1", "제목2");
-    }
-
-    @Test
-    void 게시물_10개_제한_테스트(){
-
-        List<CachedNews> cachedNewsList= new ArrayList<>();
-        for (int i = 0; i < 15; i++) {
-            CachedNews cachedNews = new CachedNews("제목" + i, "요약", "url" + i, "출처", LocalDateTime.now(), List.of(1.0,0.0));
-            cachedNewsList.add(cachedNews);
-        }
-
-        NewsCache newsCache = mock(NewsCache.class);
-        when(newsCache.getCachedNewsList()).thenReturn(cachedNewsList);
-        NewsService newsService = new NewsService(newsCache, new FakeEmbeddingClient());
-        List<NewsSearchResult> results = newsService.search("테스트");
-
-        assertThat(results).hasSize(10);
+        assertThat(results).hasSize(1);
+        NewsSearchResult result = results.get(0);
+        assertThat(result).isEqualTo(new NewsSearchResult(
+                "제목1", "요약1", "원본링크1", LocalDateTime.of(2026, 1, 1, 0, 0), "뉴스회사1", 0.5));
 
     }
-
-
 }

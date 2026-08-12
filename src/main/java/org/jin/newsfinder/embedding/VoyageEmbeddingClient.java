@@ -14,7 +14,7 @@ public class VoyageEmbeddingClient implements EmbeddingClient{
     private String apiKey;
     private final RestClient restClient = RestClient.create();
 
-    private List<Double> embed(String text, String inputType){
+    private float[] embed(String text, String inputType){
 
         EmbeddingRequest embeddingRequest = new EmbeddingRequest(List.of(text),"voyage-4-lite" ,inputType);
 
@@ -35,10 +35,10 @@ public class VoyageEmbeddingClient implements EmbeddingClient{
         return response.data().get(0).embedding();
     }
 
-    private List<List<Double>> embedBatch(List<String> chunk) {
+    private List<float[]> embedBatch(List<String> chunk) {
 
         EmbeddingRequest embeddingRequest = new EmbeddingRequest(chunk, "voyage-4-lite", "document");
-        List<List<Double>> result = new ArrayList<>();
+        List<float[]> result = new ArrayList<>();
 
         EmbeddingResponse response = restClient.post()
                 .uri("https://api.voyageai.com/v1/embeddings")
@@ -65,17 +65,17 @@ public class VoyageEmbeddingClient implements EmbeddingClient{
 
     }
 
-    public List<Double> embedDocument(String text) {
+    public float[] embedDocument(String text) {
         return embed(text,"document");
     }
 
-    public List<Double> embedQuery(String text) {
+    public float[] embedQuery(String text) {
         return embed(text,"query");
     }
 
-    public List<List<Double>> embedDocuments(List<String> texts){
+    public List<float[]> embedDocuments(List<String> texts){
 
-        List<List<Double>> batchList = new ArrayList<>();
+        List<float[]> batchList = new ArrayList<>();
 
         //voyage4lite batch 요청 최대 크기 128
         for(int i = 0; i < texts.size(); i += 128){
