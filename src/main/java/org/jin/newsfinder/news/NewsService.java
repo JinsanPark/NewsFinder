@@ -12,9 +12,9 @@ import java.util.List;
 
 @Service
 public class NewsService {
-    private final static int MAX_SEARCH_SIZE = 10;
+    private static final  int MAX_SEARCH_SIZE = 10;
     //무관한 검색어 검색시 최고 점수 0.3아래. 연관된 검색어 검색시 최고 0.46;
-    private final static double MIN_SEARCH_SCORE = 0.35;
+    private static final  double MIN_SEARCH_SCORE = 0.35;
     private final NewsCache newsCache;
     private final EmbeddingClient embeddingClient;
 

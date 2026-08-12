@@ -23,10 +23,6 @@ public class NewsServiceTest {
         CachedNews news3 = new CachedNews("제목3",  "요약", "url3", "출처", LocalDateTime.now(), List.of(0.0,1.0));
 
         NewsCache newsCache = mock(NewsCache.class);
-        List<CachedNews> list = new ArrayList<>();
-        list.add(news1);
-        list.add(news2);
-        list.add(news3);
         when(newsCache.getCachedNewsList()).thenReturn(List.of(news1, news2,news3));
 
         NewsService newsService = new NewsService(newsCache, new FakeEmbeddingClient());

@@ -20,7 +20,7 @@ public class DataInitializer implements CommandLineRunner {
     private final EmbeddingClient embeddingClient;
     private final ObjectMapper objectMapper;
 
-    public DataInitializer(NewsRepository newsRepository, EmbeddingClient embeddingClient, NewsService newsService, ObjectMapper objectMapper) {
+    public DataInitializer(NewsRepository newsRepository, EmbeddingClient embeddingClient,ObjectMapper objectMapper) {
         this.newsRepository = newsRepository;
         this.embeddingClient = embeddingClient;
         this.objectMapper = objectMapper;
