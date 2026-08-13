@@ -77,7 +77,7 @@ public class VoyageEmbeddingClient implements EmbeddingClient{
 
         List<float[]> batchList = new ArrayList<>();
 
-        //voyage4lite batch 요청 최대 크기 128
+        //voyage4lite batch 요청 최대 크기 1000. 128로 쪼갬
         for(int i = 0; i < texts.size(); i += 128){
             int end = Math.min(texts.size(), i + 128);
             List<String> chunk = texts.subList(i,end);
