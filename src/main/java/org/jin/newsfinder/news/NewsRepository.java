@@ -17,7 +17,7 @@ public interface NewsRepository extends JpaRepository<News, Long> {
                1 - (embedding <=> CAST(:queryVector AS vector)) AS "score"
         FROM news
         WHERE 1 - (embedding <=> CAST(:queryVector AS vector)) >= :minScore
-        ORDER BY "score" DESC
+        ORDER BY embedding <=> CAST(:queryVector AS vector)
         LIMIT :limit
         """, nativeQuery = true)
     List<NewsSearchProjection> searchByVector(@Param("queryVector") float[] queryVector,
