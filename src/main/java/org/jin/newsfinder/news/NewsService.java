@@ -24,6 +24,7 @@ public class NewsService {
     public List<NewsSearchResult> search(String query) {
 
         float[] queryToVector = embeddingClient.embedQuery(query);
+
         List<NewsSearchProjection> newsList = newsRepository.searchByVector(queryToVector, MIN_SEARCH_SCORE, MAX_SEARCH_SIZE);
         List<NewsSearchResult> results = new ArrayList<>();
 
@@ -39,6 +40,5 @@ public class NewsService {
         }
 
         return results;
-
     }
 }
