@@ -34,7 +34,6 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         NewsArticle[] articles = objectMapper.readValue(new File("data/news_articles_dummy.json"), NewsArticle[].class);
-        long start = System.nanoTime();
 
         List<String> newsString = new ArrayList<>();
 
@@ -66,9 +65,6 @@ public class DataInitializer implements CommandLineRunner {
 
         newsRepository.saveAll(newsList);
 
-        long end = System.nanoTime();
-        double seconds = (end - start) / 1_000_000_000.0;
-        System.out.printf("%.5f초%n", seconds);
 
     }
 }

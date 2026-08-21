@@ -12,11 +12,15 @@ import java.util.List;
 public class VoyageEmbeddingClient implements EmbeddingClient{
     @Value("${voyage.api-key}")
     private String apiKey;
+
+    @Value("${voyage.model}")
+    private String voyageModel;
+
     private final RestClient restClient = RestClient.create();
 
     private float[] embed(String text, String inputType){
 
-        EmbeddingRequest embeddingRequest = new EmbeddingRequest(List.of(text),"voyage-4-lite" ,inputType);
+        EmbeddingRequest embeddingRequest = new EmbeddingRequest(List.of(text), voyageModel ,inputType);
 
         EmbeddingResponse response = restClient.post()
                 .uri("https://api.voyageai.com/v1/embeddings")
@@ -37,7 +41,7 @@ public class VoyageEmbeddingClient implements EmbeddingClient{
 
     private List<float[]> embedBatch(List<String> chunk) {
 
-        EmbeddingRequest embeddingRequest = new EmbeddingRequest(chunk, "voyage-4-lite", "document");
+        EmbeddingRequest embeddingRequest = new EmbeddingRequest(chunk, voyageModel , "document");
         List<float[]> result = new ArrayList<>();
 
         EmbeddingResponse response = restClient.post()

@@ -1,6 +1,6 @@
 package org.jin.newsfinder.news;
 
-import org.jin.newsfinder.embedding.FakeEmbeddingClient;
+import org.jin.newsfinder.queryVector.QueryVectorService;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -16,6 +16,7 @@ public class NewsServiceTest {
 
         NewsRepository newsRepository = mock(NewsRepository.class);
         NewsSearchProjection projection = mock(NewsSearchProjection.class);
+        QueryVectorService queryVectorService = mock(QueryVectorService.class);
 
         when(projection.getTitle()).thenReturn("제목1");
         when(projection.getScore()).thenReturn(0.5);
@@ -25,8 +26,9 @@ public class NewsServiceTest {
         when(projection.getSource()).thenReturn("뉴스회사1");
 
         when(newsRepository.searchByVector(any(), anyDouble(), anyInt())).thenReturn(List.of(projection));
+        when(queryVectorService.getVector(any())).thenReturn(new float[]{1.0f, 0.0f});
 
-        List<NewsSearchResult> results = new NewsService(newsRepository, new FakeEmbeddingClient()).search("테스트");
+        List<NewsSearchResult> results = new NewsService(newsRepository, queryVectorService).search("테스트");
 
         assertThat(results).hasSize(1);
         NewsSearchResult result = results.get(0);
