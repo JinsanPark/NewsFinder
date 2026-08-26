@@ -1,6 +1,6 @@
 # 임베딩 검색 프로그램
 
-> 시작: [코사인 유사도와 벡터 검색](https://jinsanpark.github.io/posts/Embedding-Project-1/)
+> 시작: [코사인 유사도와 벡터 검색](https://jinsanpark.github.io/posts/Embedding-Project/)
 
 뉴스 기사를 임베딩해서 의미로 검색하는 웹 애플리케이션.
 "코스피 하락"으로 검색하면 그 단어가 없는 "사이드카 이틀 연속 발동" 같은 기사도 찾아준다.
@@ -24,7 +24,7 @@ Spring Boot / PostgreSQL + pgvector / Voyage AI 임베딩.
 
 ## 검색 성능 - 캐시, pgvector, 인덱스
 
-> 과정: [캐시로 성능 향상 시키기?](https://jinsanpark.github.io/posts/Embedding-Porject-3/) · [pgvector, 계산을 DB한테 떠넘기기](https://jinsanpark.github.io/posts/Embedding-Project-4/) · [검색 성능 측정](https://jinsanpark.github.io/posts/Embedding-Project-5/)
+> 과정: [캐시로 성능 향상 시키기?](https://jinsanpark.github.io/posts/Embedding-Project-3/) · [pgvector, 계산을 DB한테 떠넘기기](https://jinsanpark.github.io/posts/Embedding-Project-4/) · [검색 성능 측정](https://jinsanpark.github.io/posts/Embedding-Project-5/)
 
 더미 기사 300건을 복제해 2,400건, 19,200건으로 늘려가며 측정.
 
