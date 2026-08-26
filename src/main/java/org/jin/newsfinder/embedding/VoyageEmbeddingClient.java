@@ -13,10 +13,13 @@ public class VoyageEmbeddingClient implements EmbeddingClient{
     @Value("${voyage.api-key}")
     private String apiKey;
 
-    @Value("${voyage.model}")
-    private String voyageModel;
-
+    private final String voyageModel;
     private final RestClient restClient = RestClient.create();
+
+
+    public VoyageEmbeddingClient(@Value("${voyage.model}") String voyageModel) {
+        this.voyageModel = voyageModel;
+    }
 
     private float[] embed(String text, String inputType){
 

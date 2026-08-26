@@ -14,12 +14,12 @@ public class QueryVectorService {
     private final EmbeddingClient embeddingClient;
     private final QueryVectorCacheRepository queryVectorCacheRepository;
 
-    @Value("${voyage.model}")
-    private String voyageModel;
+    private final String voyageModel;
 
-    public QueryVectorService(EmbeddingClient embeddingClient, QueryVectorCacheRepository queryVectorCacheRepository) {
+    public QueryVectorService(EmbeddingClient embeddingClient, QueryVectorCacheRepository queryVectorCacheRepository, @Value("${voyage.model}") String voyageModel) {
         this.embeddingClient = embeddingClient;
         this.queryVectorCacheRepository = queryVectorCacheRepository;
+        this.voyageModel = voyageModel;
     }
 
     private String normalizeQuery(String query) {

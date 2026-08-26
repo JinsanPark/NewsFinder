@@ -12,7 +12,7 @@ Spring Boot / PostgreSQL + pgvector / Voyage AI 임베딩.
 
 > 과정: [임베딩 그리고 배치](https://jinsanpark.github.io/posts/Embedding-Project-2/)
 
-300건 적재 시 58초 소요. 요청 1건당 약 200ms가 Voyage API 응답 대기 시간이었음. (기사 본문 임베딩 기준)
+300건 적재 시 58초 소요. 요청 1건당 약 200ms가 Voyage API 응답 대기 시간이었음. (기사 제목 + 요약 임베딩 기준)
 `input` 파라미터가 배열을 받는 점을 이용해 128건씩 묶어 호출하도록 변경.
 
 | | 요청 횟수 | 소요 시간 |
