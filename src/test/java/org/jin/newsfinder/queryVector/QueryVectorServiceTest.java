@@ -1,5 +1,6 @@
 package org.jin.newsfinder.queryVector;
 
+
 import org.jin.newsfinder.embedding.EmbeddingClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,12 +20,39 @@ public class QueryVectorServiceTest {
     private QueryVectorCacheRepository queryVectorCacheRepository;
     private QueryVectorService queryVectorService;
 
+
     @BeforeEach
     void setUp() {
         embeddingClient = mock(EmbeddingClient.class);
         queryVectorCacheRepository = mock(QueryVectorCacheRepository.class);
         queryVectorService = new QueryVectorService(embeddingClient, queryVectorCacheRepository, MODEL);
     }
+
+    @Test
+    void LRU_캐시히트시_DB_조회_1번 (){
+        QueryVectorCache cached = new QueryVectorCache("테스트", MODEL, new float[]{1.0f, 0.0f}, LocalDateTime.now());
+        when(queryVectorCacheRepository.findByNormalizedQueryAndModel(any(), any())).thenReturn(Optional.of(cached));
+        queryVectorService.getVector("테스트");
+
+        queryVectorService.getVector("테스트");
+
+        verify(queryVectorCacheRepository, times(1)).findByNormalizedQueryAndModel(any(), any());
+        verify(embeddingClient, never()).embedQuery(any());
+    }
+
+    @Test
+    void 두번_불러도_API는_1번(){
+        when(queryVectorCacheRepository.findByNormalizedQueryAndModel(any(), any())).thenReturn(Optional.empty());
+        when(embeddingClient.embedQuery(any())).thenReturn(new float[]{0.1f, 0.1f});
+        queryVectorService.getVector("테스트");
+
+        float[] result = queryVectorService.getVector("테스트");
+
+        assertThat(result).containsExactly(0.1f, 0.1f);
+        verify(embeddingClient, times(1)).embedQuery(any());
+    }
+
+
 
     @Test
     void 캐시히트시_API_호출_안함() {
@@ -51,7 +79,7 @@ public class QueryVectorServiceTest {
         QueryVectorCache saved = argumentCaptor.getValue();
         assertThat(saved.getNormalizedQuery()).isEqualTo("qvc api 테스트");
         assertThat(saved.getModel()).isEqualTo(MODEL);
-
     }
+
 
 }
