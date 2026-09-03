@@ -20,7 +20,7 @@ public class QueryVectorService {
     private final String voyageModel;
     private static final Logger log = LoggerFactory.getLogger(QueryVectorService.class);
 
-    private LruCache<String, float[]> lruCached = new LruCache<>(10);
+    private LruCache<String, float[]> lruCached = new LruCache<>(100);
 
     public QueryVectorService(EmbeddingClient embeddingClient, QueryVectorCacheRepository queryVectorCacheRepository, @Value("${voyage.model}") String voyageModel) {
         this.embeddingClient = embeddingClient;
@@ -43,41 +43,37 @@ public class QueryVectorService {
         double ms;
         String norm = normalizeQuery(query);
         float[] normToVector;
+        String path = null;
+        double apiTime = 0;
 
         try {
 
             if (lruCached.containsKey(norm)) {
+                path = "L1_hit";
                 normToVector = lruCached.get(norm);
-                ms = (System.nanoTime() - startGetVector) / 1_000_000.0;
-                log.debug("L1_hit_ms={}", ms);
                 return normToVector;
             }
 
             Optional<QueryVectorCache> cached = queryVectorCacheRepository.findByNormalizedQueryAndModel(norm, voyageModel);
 
             if (cached.isPresent()) {
+                path = "DB_hit";
                 QueryVectorCache cache = cached.get();
                 lruCached.put(norm, cache.getEmbedding());
-                ms = (System.nanoTime() - startGetVector) / 1_000_000.0;
-                log.debug("DB_hit_ms={}", ms);
                 return cache.getEmbedding();
             } else {
+                path = "API_miss";
                 long apiStart = System.nanoTime();
                 normToVector = embeddingClient.embedQuery(norm);
-                double apiTime = (System.nanoTime() - apiStart) / 1_000_000.0;
-                log.debug("api_time_ms={}", apiTime);
+                apiTime = (System.nanoTime() - apiStart) / 1_000_000.0;
                 QueryVectorCache cache = new QueryVectorCache(norm, voyageModel, normToVector, LocalDateTime.now());
                 lruCached.put(norm, cache.getEmbedding());
                 queryVectorCacheRepository.save(cache);
-                ms = (System.nanoTime() - startGetVector) / 1_000_000.0;
-                log.debug("L1_and_DB_miss_ms={}", ms);
             }
 
         } finally {
-
             ms = (System.nanoTime() - startGetVector) / 1_000_000.0;
-            log.debug("total_ms={}", ms);
-
+            log.debug("path={} term={} api_ms={} total_ms={}", path, norm, apiTime, ms);
         }
 
         return normToVector;
