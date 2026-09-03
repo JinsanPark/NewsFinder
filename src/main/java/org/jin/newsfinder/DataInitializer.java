@@ -2,6 +2,8 @@ package org.jin.newsfinder;
 
 import org.jin.newsfinder.embedding.EmbeddingClient;
 import org.jin.newsfinder.news.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,7 @@ import java.util.List;
 @Profile("init")
 public class DataInitializer implements CommandLineRunner {
 
+    private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
     private final NewsRepository newsRepository;
     private final EmbeddingClient embeddingClient;
     private final ObjectMapper objectMapper;
@@ -29,7 +32,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         if (newsRepository.count() > 0){
-            System.out.println("데이터 이미 있음.");
+            log.info("Has data already");
             return;
         }
 
