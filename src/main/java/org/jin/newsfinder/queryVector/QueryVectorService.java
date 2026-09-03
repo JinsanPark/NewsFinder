@@ -45,6 +45,7 @@ public class QueryVectorService {
         float[] normToVector;
         String path = null;
         double apiTime = 0;
+        double saveTime = 0;
 
         try {
 
@@ -68,12 +69,14 @@ public class QueryVectorService {
                 apiTime = (System.nanoTime() - apiStart) / 1_000_000.0;
                 QueryVectorCache cache = new QueryVectorCache(norm, voyageModel, normToVector, LocalDateTime.now());
                 lruCached.put(norm, cache.getEmbedding());
+                long saveStart = System.nanoTime();
                 queryVectorCacheRepository.save(cache);
+                saveTime = (System.nanoTime() - saveStart) / 1_000_000.0;
             }
 
         } finally {
             ms = (System.nanoTime() - startGetVector) / 1_000_000.0;
-            log.debug("path={} term={} api_ms={} total_ms={}", path, norm, apiTime, ms);
+            log.debug("path={} term={} save_ms={} api_ms={} total_ms={}", path, norm, saveTime , apiTime, ms);
         }
 
         return normToVector;
