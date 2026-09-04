@@ -1,8 +1,6 @@
 # 측정 상세
 
 [README](../README.md)의 성능 수치에 대한 근거와 조건.
-
-측정 절차와 집계 규칙은 [data/measurement-protocol.md](../data/measurement-protocol.md)를 따름.
 원자료는 [data/raw/](../data/raw/)에 있음.
 
 ---
@@ -197,13 +195,14 @@ DB는 프로세스보다 오래 살아 모델 교체 후에도 이전 벡터가 
 
 ### 측정 조건
 
-- 커밋 `53c3706` (`_api-miss-v2`는 `save_ms` 구간 추가 후)
+- 커밋 [`53c3706`](https://github.com/JinsanPark/NewsFinder/commit/53c37069aa5ea2a732ac360d04423ec19f26add7) `_api-miss-v2`는 `save_ms` 구간 추가 후 측정 ([`4bbc4c3`](https://github.com/JinsanPark/NewsFinder/commit/4bbc4c323ba609221bfe5f422c7f9092ce6e1b9c))
 - 측정 지점: 서버 내부. `getVector()` 진입 ~ `finally`. 한 요청이 로그 한 줄을 남김
   (`path` / `term` / `save_ms` / `api_ms` / `total_ms`)
 - 클라이언트 측정 없음. 경로당 200회를 브라우저로 돌릴 수 없어 서버 내부만 측정
 - 입력: [검색어 200개](../data/search_terms_200.md)
 - 통계: 중앙값과 p95(nearest-rank). 워밍업·실패 외 이상치 제거 없음
 - news 300건 / L1 용량 100 / `spring.jpa.show-sql=false`
+- L1 캐시 검색은 101 ~ 200번 까지 검색어를 순차적으로 2번 반복시킴
 - 인덱스 `news_embedding_hnsw` 존재하나 이번 측정은 `query_vector_cache`만 조회하므로 무관
 
 경로별 초기화 방법이 다름. **앱 재시작은 L1만 비우고 DB 캐시는 비우지 않음.**

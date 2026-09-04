@@ -63,9 +63,9 @@ DB 쿼리 실행은 1%에 불과하기 때문. 같은 이유로 이 규모에서
 
 -> [측정 상세](docs/performance.md#검색-성능)
 
-### 검색어 벡터 캐시
+### 검색어 벡터 캐시 
 
-> 과정: [벡터 재활용](https://jinsanpark.github.io/posts/Embedding-Project-6/)
+> 과정(측정값은 부정확함으로 과정만 참조): [벡터 재활용](https://jinsanpark.github.io/posts/Embedding-Project-6/)
 
 응답의 87%가 검색어 임베딩 API 대기였으므로, 한 번 만든 검색어 벡터를 저장해 재사용.
 `(정규화된 검색어, 모델명)`을 키로 조회하고, 있으면 API를 호출하지 않음.
@@ -73,21 +73,24 @@ DB 쿼리 실행은 1%에 불과하기 때문. 같은 이유로 이 규모에서
 캐시 히트 시 226.4 ms -> 28.2 ms. 미스는 조회·저장이 붙어 도입 전보다 느려짐.
 
 이후 DB 캐시 앞에 메모리 캐시(LRU, 용량 100)를 한 겹 더 얹음.
-
+> 과정: [L1 캐시 측정과 조건 기준점 최대한 세우기](https://jinsanpark.github.io/posts/Embedding-Project-11/)
+>
 ```
 L1(메모리) -> DB(query_vector_cache) -> Voyage API
 ```
+> 과정: [간단한 LRU 코드](https://jinsanpark.github.io/posts/Embedding-Project-9/) · [L1 캐시](https://jinsanpark.github.io/posts/Embedding-Project-10/)
 
 경로별로 0.0098 ms / 15.2 ms / 216.5 ms. **L1이 줄인 것은 DB 왕복 15.2 ms**로,
 DB 캐시가 걷어낸 약 204 ms의 7% 수준임. 손익분기 히트율은 14.6%.
 
 -> [측정 상세](docs/performance.md#검색어-벡터-캐시) · [L1 메모리 캐시](docs/performance.md#l1-메모리-캐시)
 
+
+
 ## 기록
 
-- 측정 절차와 집계 규칙: [data/measurement-protocol.md](data/measurement-protocol.md)
 - 원자료: [data/raw/](data/raw/)
-- 과정 기록: [블로그 시리즈](https://jinsanpark.github.io/categories/newsfinder/)
+- 과정 기록: [블로그 시리즈](https://jinsanpark.github.io/posts/Embedding-Project-index/)
 
 2026-08-28 측정값 일부는 2026-09-03 재측정에서 변화가 있었음.
 [정정 내역](docs/performance.md#2026-08-28-측정-정정) 참고.
