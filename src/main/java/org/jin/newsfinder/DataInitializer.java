@@ -22,7 +22,7 @@ public class DataInitializer implements CommandLineRunner {
     private final EmbeddingClient embeddingClient;
     private final ObjectMapper objectMapper;
 
-    public DataInitializer(NewsRepository newsRepository, EmbeddingClient embeddingClient,ObjectMapper objectMapper) {
+    public DataInitializer(NewsRepository newsRepository, EmbeddingClient embeddingClient, ObjectMapper objectMapper) {
         this.newsRepository = newsRepository;
         this.embeddingClient = embeddingClient;
         this.objectMapper = objectMapper;
@@ -31,7 +31,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        if (newsRepository.count() > 0){
+        if (newsRepository.count() > 0) {
             log.info("Has data already");
             return;
         }
@@ -40,8 +40,8 @@ public class DataInitializer implements CommandLineRunner {
 
         List<String> newsString = new ArrayList<>();
 
-        for (NewsArticle article : articles){
-                newsString.add(article.summary() + "\n" + article.title());
+        for (NewsArticle article : articles) {
+            newsString.add(article.summary() + "\n" + article.title());
         }
 
         List<float[]> vectors = embeddingClient.embedDocuments(newsString);

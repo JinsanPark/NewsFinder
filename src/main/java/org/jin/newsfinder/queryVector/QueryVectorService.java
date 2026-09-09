@@ -5,11 +5,11 @@ import org.jin.newsfinder.embedding.EmbeddingClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Optional;
 
 
@@ -50,9 +50,10 @@ public class QueryVectorService {
 
         try {
 
-            if (lruCached.containsKey(norm)) {
+            normToVector = lruCached.get(norm);
+
+            if (normToVector != null) {
                 path = "L1_hit";
-                normToVector = lruCached.get(norm);
                 return normToVector;
             }
 
@@ -71,13 +72,17 @@ public class QueryVectorService {
                 QueryVectorCache cache = new QueryVectorCache(norm, voyageModel, normToVector, LocalDateTime.now());
                 lruCached.put(norm, cache.getEmbedding());
                 long saveStart = System.nanoTime();
-                queryVectorCacheRepository.save(cache);
+                try {
+                    queryVectorCacheRepository.save(cache);
+                } catch (DataIntegrityViolationException e) {
+                    path = "API_miss_dup";
+                }
                 saveTime = (System.nanoTime() - saveStart) / 1_000_000.0;
             }
 
         } finally {
             ms = (System.nanoTime() - startGetVector) / 1_000_000.0;
-            log.debug("path={} term={} save_ms={} api_ms={} total_ms={}", path, norm, saveTime , apiTime, ms);
+            log.debug("path={} term={} save_ms={} api_ms={} total_ms={}", path, norm, saveTime, apiTime, ms);
         }
 
         return normToVector;
