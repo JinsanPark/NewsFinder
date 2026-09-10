@@ -11,7 +11,7 @@ public class LruCacheTest {
 
 
     @Test
-    void LRU_동작확인() {
+    void LRU_get한_키가_늦게_나감() {
 
         //given
         LruCache<String, String> cache = new LruCache<>(3);
@@ -65,7 +65,7 @@ public class LruCacheTest {
 
     @Test
     @Timeout(10)
-    void 동시_get하면_링크_끊김() throws InterruptedException{
+    void 동시_get해도_순회개수_캐시크기_일치() throws InterruptedException{
         LruCache<String, Integer> cache = new LruCache<>(1000);
         int threadCount = 8;
 
