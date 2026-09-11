@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 @Service
@@ -21,6 +22,7 @@ public class QueryVectorService {
     private final String voyageModel;
     private static final Logger log = LoggerFactory.getLogger(QueryVectorService.class);
 
+    private final ConcurrentHashMap<String, Object> locks = new ConcurrentHashMap<>();
     private LruCache<String, float[]> lruCached = new LruCache<>(100);
 
     public QueryVectorService(EmbeddingClient embeddingClient, QueryVectorCacheRepository queryVectorCacheRepository, @Value("${voyage.model}") String voyageModel) {
@@ -49,35 +51,42 @@ public class QueryVectorService {
         double saveTime = 0;
 
         try {
-
             normToVector = lruCached.get(norm);
-
             if (normToVector != null) {
                 path = "L1_hit";
                 return normToVector;
             }
 
-            Optional<QueryVectorCache> cached = queryVectorCacheRepository.findByNormalizedQueryAndModel(norm, voyageModel);
+            Object lock = locks.computeIfAbsent(norm, k -> new Object());
 
-            if (cached.isPresent()) {
-                path = "DB_hit";
-                QueryVectorCache cache = cached.get();
-                lruCached.put(norm, cache.getEmbedding());
-                return cache.getEmbedding();
-            } else {
-                path = "API_miss";
-                long apiStart = System.nanoTime();
-                normToVector = embeddingClient.embedQuery(norm);
-                apiTime = (System.nanoTime() - apiStart) / 1_000_000.0;
-                QueryVectorCache cache = new QueryVectorCache(norm, voyageModel, normToVector, LocalDateTime.now());
-                lruCached.put(norm, cache.getEmbedding());
-                long saveStart = System.nanoTime();
-                try {
-                    queryVectorCacheRepository.save(cache);
-                } catch (DataIntegrityViolationException e) {
-                    path = "API_miss_dup";
+            synchronized (lock) {
+                normToVector = lruCached.get(norm);
+                if (normToVector != null) {
+                    path = "L1_hit_by_lock_wait";
+                    return normToVector;
                 }
-                saveTime = (System.nanoTime() - saveStart) / 1_000_000.0;
+
+                Optional<QueryVectorCache> cached = queryVectorCacheRepository.findByNormalizedQueryAndModel(norm, voyageModel);
+                if (cached.isPresent()) {
+                    path = "DB_hit";
+                    QueryVectorCache cache = cached.get();
+                    lruCached.put(norm, cache.getEmbedding());
+                    return cache.getEmbedding();
+                } else {
+                    path = "API_miss";
+                    long apiStart = System.nanoTime();
+                    normToVector = embeddingClient.embedQuery(norm);
+                    apiTime = (System.nanoTime() - apiStart) / 1_000_000.0;
+                    QueryVectorCache cache = new QueryVectorCache(norm, voyageModel, normToVector, LocalDateTime.now());
+                    lruCached.put(norm, cache.getEmbedding());
+                    long saveStart = System.nanoTime();
+                    try {
+                        queryVectorCacheRepository.save(cache);
+                    } catch (DataIntegrityViolationException e) {
+                        path = "API_miss_dup";
+                    }
+                    saveTime = (System.nanoTime() - saveStart) / 1_000_000.0;
+                }
             }
 
         } finally {
