@@ -58,6 +58,7 @@ public class QueryVectorService {
             }
 
             Object lock = locks.computeIfAbsent(norm, k -> new Object());
+            QueryVectorCache cache;
 
             synchronized (lock) {
                 normToVector = lruCached.get(norm);
@@ -69,7 +70,7 @@ public class QueryVectorService {
                 Optional<QueryVectorCache> cached = queryVectorCacheRepository.findByNormalizedQueryAndModel(norm, voyageModel);
                 if (cached.isPresent()) {
                     path = "DB_hit";
-                    QueryVectorCache cache = cached.get();
+                    cache = cached.get();
                     lruCached.put(norm, cache.getEmbedding());
                     return cache.getEmbedding();
                 } else {
@@ -77,17 +78,18 @@ public class QueryVectorService {
                     long apiStart = System.nanoTime();
                     normToVector = embeddingClient.embedQuery(norm);
                     apiTime = (System.nanoTime() - apiStart) / 1_000_000.0;
-                    QueryVectorCache cache = new QueryVectorCache(norm, voyageModel, normToVector, LocalDateTime.now());
+                    cache = new QueryVectorCache(norm, voyageModel, normToVector, LocalDateTime.now());
                     lruCached.put(norm, cache.getEmbedding());
-                    long saveStart = System.nanoTime();
-                    try {
-                        queryVectorCacheRepository.save(cache);
-                    } catch (DataIntegrityViolationException e) {
-                        path = "API_miss_dup";
-                    }
-                    saveTime = (System.nanoTime() - saveStart) / 1_000_000.0;
                 }
             }
+
+            long saveStart = System.nanoTime();
+            try {
+                queryVectorCacheRepository.save(cache);
+            } catch (DataIntegrityViolationException e) {
+                path = "API_miss_dup";
+            }
+            saveTime = (System.nanoTime() - saveStart) / 1_000_000.0;
 
         } finally {
             ms = (System.nanoTime() - startGetVector) / 1_000_000.0;
@@ -97,6 +99,4 @@ public class QueryVectorService {
         return normToVector;
 
     }
-
-
 }
