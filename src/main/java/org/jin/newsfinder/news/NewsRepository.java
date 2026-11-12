@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface NewsRepository extends JpaRepository<News, Long> {
@@ -23,5 +24,8 @@ public interface NewsRepository extends JpaRepository<News, Long> {
     List<NewsSearchProjection> searchByVector(@Param("queryVector") float[] queryVector,
                                               @Param("minScore") double minScore,
                                               @Param("limit") int limit);
+
+    @Query("SELECT n.url FROM News n WHERE n.url IN :urls")
+    List<String> findExistingUrls(@Param("urls") Collection<String> urls);
 
 }
