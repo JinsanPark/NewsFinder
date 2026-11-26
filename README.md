@@ -4,7 +4,7 @@
 
 뉴스 기사를 임베딩해서 의미로 검색하는 웹 애플리케이션.
 "코스피 하락"으로 검색하면 그 단어가 없는 "사이드카 이틀 연속 발동" 같은 기사도 찾아줌.
-학습 목적의 개인 프로젝트로, 현재 기사 데이터는 저작권 문제를 피하기 위해 더미 데이터를 사용.
+학습 목적의 개인 프로젝트. 기사 데이터는 연합뉴스 RSS의 제목·요약만 사용 (본문은 수집하지 않음).
 
 Spring Boot / PostgreSQL + pgvector / Voyage AI 임베딩.
 
@@ -34,8 +34,7 @@ Spring Boot / PostgreSQL + pgvector / Voyage AI 임베딩.
 
 1. postgres 실행 — `pgvector/pgvector` 이미지 사용, DB 생성 후 `CREATE EXTENSION vector;`
 2. 아래 인덱스 생성
-3. `init` 프로파일로 실행하면 `data/news_articles_dummy.json`을 적재 (최초 1회)
-4. 프로파일 없이 실행하면 검색 서버
+3. 앱 실행 후 `POST /admin/rss`로 RSS 기사 적재 (임시 엔드포인트, 부를 때마다 Voyage 비용 발생)
 
 ```sql
 CREATE INDEX news_embedding_hnsw ON news USING hnsw (embedding vector_cosine_ops);

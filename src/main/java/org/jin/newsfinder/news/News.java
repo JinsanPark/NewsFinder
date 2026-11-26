@@ -18,6 +18,7 @@ public class News {
     @Column(length = 20000)
     private String content;
 
+    @Column(length = 5000)
     private String summary;
     private String url;
     private String source;
