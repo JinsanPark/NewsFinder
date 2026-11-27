@@ -4,13 +4,14 @@
 
 뉴스 기사를 임베딩해서 의미로 검색하는 웹 애플리케이션.
 "코스피 하락"으로 검색하면 그 단어가 없는 "사이드카 이틀 연속 발동" 같은 기사도 찾아줌.
-학습 목적의 개인 프로젝트. 기사 데이터는 연합뉴스 RSS의 제목·요약만 사용 (본문은 수집하지 않음).
+학습 목적의 개인 프로젝트. 기사 데이터는 언론사 RSS 5곳(연합뉴스·경향신문·동아일보·조선일보·한겨레:온)의 제목·요약만 사용 (본문은 수집하지 않음).
+피드 목록은 `src/main/resources/rss-feeds.properties`.
 
 Spring Boot / PostgreSQL + pgvector / Voyage AI 임베딩.
 
 ## 성능 개선 요약
 
-300건 기준, 검색 한 번의 응답 시간.
+검색 한 번의 응답 시간. **더미 데이터 300건 시절 측정값**으로, 실데이터(RSS)로 바뀐 뒤에는 아직 재측정하지 않음.
 
 | 단계 | 응답 시간 | 커밋 |
 |---|---|---|
@@ -33,14 +34,14 @@ Spring Boot / PostgreSQL + pgvector / Voyage AI 임베딩.
 환경변수: `VOYAGE_API_KEY`, `DB_HOST`, `DB_USERNAME`, `DB_PASSWORD`
 
 1. postgres 실행 — `pgvector/pgvector` 이미지 사용, DB 생성 후 `CREATE EXTENSION vector;`
-2. 아래 인덱스 생성
-3. 앱 실행 후 `POST /admin/rss`로 RSS 기사 적재 (임시 엔드포인트, 부를 때마다 Voyage 비용 발생)
+2. 앱 1회 실행 — `news` 테이블이 `ddl-auto`로 생성됨
+3. 아래 인덱스 생성 — 코드로 관리되지 않으므로 새 환경에서는 직접 실행 필요
 
-```sql
-CREATE INDEX news_embedding_hnsw ON news USING hnsw (embedding vector_cosine_ops);
-```
+   ```sql
+   CREATE INDEX news_embedding_hnsw ON news USING hnsw (embedding vector_cosine_ops);
+   ```
 
-이 인덱스는 코드로 관리되지 않으므로 새 환경에서는 직접 실행 필요.
+4. `POST /admin/rss`로 RSS 기사 적재 (임시 엔드포인트, 부를 때마다 Voyage 비용 발생)
 
 ## 무엇을 개선했나
 
@@ -72,12 +73,12 @@ DB 쿼리 실행은 1%에 불과하기 때문. 같은 이유로 이 규모에서
 캐시 히트 시 226.4 ms -> 28.2 ms. 미스는 조회·저장이 붙어 도입 전보다 느려짐.
 
 이후 DB 캐시 앞에 메모리 캐시(LRU, 용량 100)를 한 겹 더 얹음.
-> 과정: [L1 캐시 측정과 조건 기준점 최대한 세우기](https://jinsanpark.github.io/posts/Embedding-Project-11/)
->
+
+> 과정: [간단한 LRU 코드](https://jinsanpark.github.io/posts/Embedding-Project-9/) · [L1 캐시](https://jinsanpark.github.io/posts/Embedding-Project-10/) · [L1 캐시 측정과 조건 기준점 최대한 세우기](https://jinsanpark.github.io/posts/Embedding-Project-11/)
+
 ```
 L1(메모리) -> DB(query_vector_cache) -> Voyage API
 ```
-> 과정: [간단한 LRU 코드](https://jinsanpark.github.io/posts/Embedding-Project-9/) · [L1 캐시](https://jinsanpark.github.io/posts/Embedding-Project-10/)
 
 경로별로 0.0098 ms / 15.2 ms / 216.5 ms. **L1이 줄인 것은 DB 왕복 15.2 ms**로,
 DB 캐시가 걷어낸 약 204 ms의 7% 수준임. 손익분기 히트율은 14.6%.
